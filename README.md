@@ -5,4 +5,4 @@
 [![Coverage Status](https://coveralls.io/repos/github/shanbay/cachext/badge.svg?branch=master)](https://coveralls.io/github/shanbay/cachext?branch=master)
 [![](https://img.shields.io/pypi/v/cachext.svg)](https://github.com/shanbay/cachext)
 [![](https://img.shields.io/pypi/pyversions/cachext.svg)](https://github.com/shanbay/cachext)
-[![](https://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://shanbay.mit-license.org)
+[![](https://img.shields.io/:license-mit-blue.svg?style=flat-square)](https://shanbay.mit-license.org)
