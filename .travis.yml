@@ -11,5 +11,5 @@ script:
   - flake8 cachext
   - pytest tests
 after_success:
-  - CODECLIMATE_REPO_TOKEN=4fcbb961dd78da843c233538e7a37f432e48980a600f96cbd8b2967fbc008c79 codeclimate-test-reporter
+  - CODECLIMATE_REPO_TOKEN=dd64ed5469f00b8a31a5064a7f1cde06968bf7bdc3b2735cb8ad4eb33b88c7a9 codeclimate-test-reporter
   - coveralls
