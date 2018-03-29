@@ -1,0 +1,15 @@
+language: python
+cache: pip
+python:
+  - "3.5"
+  - "3.6"
+install:
+  - pip install -r test-requirements.txt -U
+services:
+  - redis-server
+script:
+  - flake8 cachext
+  - pytest tests
+after_success:
+  - CODECLIMATE_REPO_TOKEN=4fcbb961dd78da843c233538e7a37f432e48980a600f96cbd8b2967fbc008c79 codeclimate-test-reporter
+  - coveralls
