@@ -32,7 +32,7 @@ cache = cachext.exts.Cache(ns='XXX_')
 `get`, `get_many`, `set`, `set_many`, `delete`, `delete_many`, `expire`, `expireat`, `clear`, `ttl`, `exists`
 
 
-## `Cache.cached(func=None, ttl=None, cache_key=cachext.cache.default_key, unless=None, fallbacked=None, cache_none=False)`
+## Cache.cached(func=None, ttl=None, cache_key=cachext.cache.default_key, unless=None, fallbacked=None, cache_none=False)
 
 **被 cached 装饰后，当函数被调用时，先去查缓存，如果有结果(缓存命中)，就会直接返回缓存的结果。如果没有结果(缓存未命中)，就会调用原函数重新计算结果，并将结果写入缓存，然后返回结果。**
 
