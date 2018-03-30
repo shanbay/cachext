@@ -32,9 +32,7 @@ cache = cachext.exts.Cache(ns='XXX_')
 `get`, `get_many`, `set`, `set_many`, `delete`, `delete_many`, `expire`, `expireat`, `clear`, `ttl`, `exists`
 
 
-## Cache.cached
-
-`Cache.cached(func=None, ttl=None, cache_key=cachext.cache.default_key, unless=None, fallbacked=None, cache_none=False)`
+## attributes `Cache.cached`
 
 **被 cached 装饰后，当函数被调用时，先去查缓存，如果有结果(缓存命中)，就会直接返回缓存的结果。如果没有结果(缓存未命中)，就会调用原函数重新计算结果，并将结果写入缓存，然后返回结果。**
 
@@ -47,6 +45,8 @@ from app.extensions import cache
 def f():
     pass
 ```
+
+**详细参数**`(func=None, ttl=None, cache_key=cachext.cache.default_key, unless=None, fallbacked=None, cache_none=False)`
 
 #### `ttl`
 
@@ -89,3 +89,10 @@ def default_key(f, *args, **kwargs):
 #### `cache_none`
 
 是否缓存 `None`，类型为 `bool`。如果为`True`，那么当原函数返回`None`，也会被缓存。并且下次调用不会 fallback 到原函数。
+
+
+## 被 `Cache.cached` 装饰过的函数，会附带如下属性：
+
+- `uncached`: 原始的未带缓存功能的函数
+- `ttl`: TTL
+- `make_cache_key`: 生成 cache_key 的函数，最终生成的 cache_key 由 make_cache_key(*args, **kwargs) 决定，其中 *args, **kwargs 为函数调用时的参数
