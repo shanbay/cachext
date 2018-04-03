@@ -4,7 +4,7 @@
 
 `CACHE_BACKEND`
 
-> Cache 的实现，目前有：`Simple` 和 `Redis`
+> Cache 的实现，目前有：`Redis`, `Memcached` 和 `Simple`
 
 `CACHE_PREFIX`
 
@@ -16,7 +16,7 @@
 
 `CACHE_*`
 
-> 其他配置，会作为字典参数传递给 backend
+> 其他配置，会作为字典参数传递给 backend，例如对于 Redis backend, 定义了`CACHE_HOST="localhost"`, `CACHE_PORT=6379`, `CACHE_DB=0`，则会以 `**{'host': 'localhost', 'port': 6379, 'db': 0}` 的方式作为额外参数传递给 `backends.Redis`。关于各个backend 的额外参数，见[backends 文档](backends)
 
 **注意：`CACHE_` 为默认的配置前缀，可以在初始化 Cache对象时通过指定 `ns` 参数改变。例如：**
 

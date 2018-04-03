@@ -24,7 +24,7 @@ class BaseBackend(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def set_many(self, mapping):
+    def set_many(self, mapping, ttl=None):
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -33,6 +33,14 @@ class BaseBackend(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def delete_many(self, keys):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def incr(self, key, delta=1):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def decr(self, key, delta=1):
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -84,10 +92,17 @@ class Redis(BaseBackend):
             key, pickle.dumps(value, pickle.HIGHEST_PROTOCOL),
             ex=ttl)
 
-    def set_many(self, mapping):
+    def set_many(self, mapping, ttl=None):
         mapping = {self.trans_key(k): pickle.dumps(v, pickle.HIGHEST_PROTOCOL)
                    for k, v in mapping.items()}
-        return self._client.mset(mapping)
+        rv = self._client.mset(mapping)
+        if ttl is None:
+            ttl = self.default_ttl
+        else:
+            ttl = int(ttl)
+        for k in mapping.keys():
+            self._client.expire(k, ttl)
+        return rv
 
     def delete(self, key):
         key = self.trans_key(key)
@@ -96,6 +111,14 @@ class Redis(BaseBackend):
     def delete_many(self, keys):
         keys = [self.trans_key(k) for k in keys]
         return self._client.delete(*keys)
+
+    def incr(self, key, delta=1):
+        key = self.trans_key(key)
+        return self._client.incr(key, delta)
+
+    def decr(self, key, delta=1):
+        key = self.trans_key(key)
+        return self._client.decr(key, delta)
 
     def expire(self, key, seconds):
         key = self.trans_key(key)
@@ -115,6 +138,79 @@ class Redis(BaseBackend):
 
     def clear(self):
         self._client.flushdb()
+        return True
+
+
+class Memcached(BaseBackend):
+
+    def __init__(self, prefix=None, default_ttl=600, **kwargs):
+        import pylibmc
+        self._client = pylibmc.Client(**kwargs)
+        self.prefix = prefix
+        self.default_ttl = default_ttl
+
+    def get(self, key):
+        key = self.trans_key(key)
+        return self._client.get(key)
+
+    def get_many(self, keys):
+        keys = [self.trans_key(k) for k in keys]
+        maps = self._client.get_multi(keys)
+        return [maps.get(k, None) for k in keys]
+
+    def set(self, key, value, ttl=None):
+        key = self.trans_key(key)
+        if ttl is None:
+            ttl = self.default_ttl
+        else:
+            ttl = int(ttl)
+        return self._client.set(key, value, time=ttl)
+
+    def set_many(self, mapping, ttl=None):
+        mapping = {self.trans_key(k): v
+                   for k, v in mapping.items()}
+        if ttl is None:
+            ttl = self.default_ttl
+        else:
+            ttl = int(ttl)
+        return self._client.set_multi(mapping, time=ttl)
+
+    def delete(self, key):
+        key = self.trans_key(key)
+        return self._client.delete(key)
+
+    def delete_many(self, keys):
+        keys = [self.trans_key(k) for k in keys]
+        return self._client.delete_multi(keys)
+
+    def incr(self, key, delta=1):
+        key = self.trans_key(key)
+        return self._client.incr(key, delta)
+
+    def decr(self, key, delta=1):
+        key = self.trans_key(key)
+        return self._client.decr(key, delta)
+
+    def expire(self, key, seconds):
+        key = self.trans_key(key)
+        return self._client.touch(key, int(seconds))
+
+    def expireat(self, key, timestamp):
+        key = self.trans_key(key)
+        value = self._client.get(key)
+        now = time.time()
+        delta = int(timestamp - now)
+        return self._client.replace(key, value, delta)
+
+    def ttl(self, key):
+        raise NotImplementedError
+
+    def exists(self, key):
+        key = self.trans_key(key)
+        return self._client.get(key) is not None
+
+    def clear(self):
+        self._client.flush_all()
         return True
 
 
@@ -154,7 +250,7 @@ class Simple(BaseBackend):
         if self._expired(exp):
             self._cache.pop(key)
             return None
-        return pickle.loads(v)
+        return v
 
     def get_many(self, keys):
         return [self.get(k) for k in keys]
@@ -166,11 +262,10 @@ class Simple(BaseBackend):
                     and self._prune() >= self.threshold:
                 return False
             self._cache[key] = (
-                self._ttl2expire(ttl), pickle.dumps(
-                    value, pickle.HIGHEST_PROTOCOL))
+                self._ttl2expire(ttl), value)
         return True
 
-    def set_many(self, mapping):
+    def set_many(self, mapping, ttl=None):
         count = len(mapping.keys())
         with self.lock:
             if len(self._cache) + count >= self.threshold \
@@ -178,8 +273,7 @@ class Simple(BaseBackend):
                 return False
             for k, v in mapping.items():
                 self._cache[self.trans_key(k)] = (
-                    self._ttl2expire(None), pickle.dumps(
-                        v, pickle.HIGHEST_PROTOCOL))
+                    self._ttl2expire(ttl), v)
         return True
 
     def delete(self, key):
@@ -194,6 +288,16 @@ class Simple(BaseBackend):
     def delete_many(self, keys):
         with self.lock:
             return sum([self.delete(k) for k in keys])
+
+    def incr(self, key, delta=1):
+        v = self.get(key)
+        v += delta
+        self.set(key, v)
+
+    def decr(self, key, delta=1):
+        v = self.get(key)
+        v -= delta
+        self.set(key, v)
 
     def expire(self, key, seconds):
         key = self.trans_key(key)
