@@ -23,11 +23,13 @@ def test_base_backend():
 
 def test_redis_backend():
     c = backends.Redis(prefix='testapp')
-    c._client.flushdb()
+    c.clear()
 
     assert c.get('key') is None
     assert not c.exists('key')
-    assert c.set_many({'ka': 'va', 'kb': 'vb'})
+    assert c.set_many({'ka': 'va', 'kb': 'vb'}, ttl=2)
+    ttl = c.ttl('kb')
+    assert ttl <= 2 and ttl > 0
     assert c.get_many(['ka', 'kb', 'nokey']) == ['va', 'vb', None]
     assert c.set('key', 'value', ttl=1)
     assert c.exists('key')
@@ -44,9 +46,45 @@ def test_redis_backend():
     assert c.expire('key', 2) == 1
     ttl = c.ttl('key')
     assert ttl <= 2 and ttl > 0
+    assert c.incr('number', 1) == 1
+    assert c.decr('number', 1) == 0
     assert c.clear()
 
-    c._client.flushdb()
+    c.clear()
+
+
+def test_memcached_backend():
+    c = backends.Memcached(prefix='testapp', servers=['localhost'])
+    c.clear()
+
+    assert c.get('key') is None
+    assert not c.exists('key')
+    assert c.set_many({'ka': 'va', 'kb': 'vb'}, ttl=2) == []
+    with pytest.raises(NotImplementedError):
+        c.ttl('ka')
+    assert c.get_many(['ka', 'kb', 'nokey']) == ['va', 'vb', None]
+    assert c.set('key', 'value', ttl=1)
+    assert c.exists('key')
+    assert c.get('key') == 'value'
+    assert c._client.get('testapp.key') == 'value'
+    assert c.expireat('key', time.time() + 1) is True
+    assert c.expireat('key', time.time() - 1) is True
+    assert c.expireat('nokey', time.time() + 1) is False
+    time.sleep(0.5)
+    assert c.get('key') is None
+    assert c.delete('nokey') is False
+    c.set('key', 'value')
+    assert c.delete('key') is True
+    assert c.delete_many(['nokey', 'ka']) is False
+    c.set('key', 'value')
+    assert c.expire('key', 2) is True
+    assert c.delete_many(['key']) is True
+    c.set('number', 0)
+    assert c.incr('number', 1) == 1
+    assert c.decr('number', 1) == 0
+    assert c.clear()
+
+    c.clear()
 
 
 def test_simple_backend():
@@ -81,5 +119,8 @@ def test_simple_backend():
     c.set('key', 'value')
     assert c.expireat('key', int(time.time() - 1)) == 1
     assert c.get('key') is None
+    c.set('number', 0)
+    assert c.incr('number', 1) == 1
+    assert c.decr('number', 1) == 0
     c.clear()
     assert len(c._cache) == 0

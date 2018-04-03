@@ -7,6 +7,7 @@ install:
   - pip install -r test-requirements.txt -U
 services:
   - redis-server
+  - memcached
 script:
   - flake8 cachext
   - pytest tests

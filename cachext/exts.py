@@ -6,7 +6,7 @@ class Cache:
 
     PROTO_METHODS = ('get', 'get_many', 'set', 'set_many', 'delete',
                      'delete_many', 'expire', 'expireat', 'clear',
-                     'ttl', 'exists')
+                     'ttl', 'exists', 'incr', 'decr')
 
     def __init__(self, ns='CACHE_'):
         self._backend = None

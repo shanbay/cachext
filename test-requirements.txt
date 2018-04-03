@@ -8,3 +8,4 @@ coverage>=4.0,<4.4
 flask
 sea
 redis
+pylibmc
