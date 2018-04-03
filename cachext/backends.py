@@ -1,7 +1,7 @@
 import abc
 import pickle
 import time
-from threading import RLock
+from threading import RLock, Lock
 
 
 class BaseBackend(metaclass=abc.ABCMeta):
@@ -221,7 +221,8 @@ class Simple(BaseBackend):
         self.threshold = threshold
         self.default_ttl = default_ttl
         self.prefix = prefix
-        self.lock = RLock()
+        self.rlock = RLock()
+        self.lock = Lock()
 
     def _ttl2expire(self, ttl):
         if ttl is None:
@@ -257,7 +258,7 @@ class Simple(BaseBackend):
 
     def set(self, key, value, ttl=None):
         key = self.trans_key(key)
-        with self.lock:
+        with self.rlock:
             if len(self._cache) >= self.threshold \
                     and self._prune() >= self.threshold:
                 return False
@@ -267,7 +268,7 @@ class Simple(BaseBackend):
 
     def set_many(self, mapping, ttl=None):
         count = len(mapping.keys())
-        with self.lock:
+        with self.rlock:
             if len(self._cache) + count >= self.threshold \
                     and self._prune() + count >= self.threshold:
                 return False
@@ -286,18 +287,26 @@ class Simple(BaseBackend):
         return 0
 
     def delete_many(self, keys):
-        with self.lock:
+        with self.rlock:
             return sum([self.delete(k) for k in keys])
 
     def incr(self, key, delta=1):
-        v = self.get(key)
-        v += delta
-        self.set(key, v)
+        key = self.trans_key(key)
+        with self.lock:
+            exp, v = self._cache.get(key)
+            v += delta
+            self._cache[key] = (
+                exp, v)
+        return v
 
     def decr(self, key, delta=1):
-        v = self.get(key)
-        v -= delta
-        self.set(key, v)
+        key = self.trans_key(key)
+        with self.lock:
+            exp, v = self._cache.get(key)
+            v -= delta
+            self._cache[key] = (
+                exp, v)
+        return v
 
     def expire(self, key, seconds):
         key = self.trans_key(key)

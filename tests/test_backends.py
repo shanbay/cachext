@@ -46,6 +46,8 @@ def test_redis_backend():
     assert c.expire('key', 2) == 1
     ttl = c.ttl('key')
     assert ttl <= 2 and ttl > 0
+    assert c.incr('number', 1) == 1
+    assert c.decr('number', 1) == 0
     assert c.clear()
 
     c.clear()
@@ -77,6 +79,9 @@ def test_memcached_backend():
     c.set('key', 'value')
     assert c.expire('key', 2) is True
     assert c.delete_many(['key']) is True
+    c.set('number', 0)
+    assert c.incr('number', 1) == 1
+    assert c.decr('number', 1) == 0
     assert c.clear()
 
     c.clear()
@@ -114,5 +119,8 @@ def test_simple_backend():
     c.set('key', 'value')
     assert c.expireat('key', int(time.time() - 1)) == 1
     assert c.get('key') is None
+    c.set('number', 0)
+    assert c.incr('number', 1) == 1
+    assert c.decr('number', 1) == 0
     c.clear()
     assert len(c._cache) == 0
