@@ -46,20 +46,6 @@
 
 #### Redis
 
-```python
-(host='localhost', port=6379,
-db=0, password=None, socket_timeout=None,
-socket_connect_timeout=None,
-socket_keepalive=None, socket_keepalive_options=None,
-connection_pool=None, unix_socket_path=None,
-encoding='utf-8', encoding_errors='strict',
-charset=None, errors=None,
-decode_responses=False, retry_on_timeout=False,
-ssl=False, ssl_keyfile=None, ssl_certfile=None,
-ssl_cert_reqs=None, ssl_ca_certs=None,
-max_connections=None)
-```
-
 - Redis [redis.StrictRedis](https://github.com/andymccurdy/redis-py/blob/5109cb4f6b610e8d5949716a16435afbbf35075a/redis/client.py#L490)
 - Memcached [pylibmc.Client](http://sendapatch.se/projects/pylibmc/reference.html)
 - Simple 无额外参数
