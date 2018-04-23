@@ -1,4 +1,5 @@
 import functools
+import inspect
 
 
 DEFAULT_KEY_TYPES = (str, int, float, bool)
@@ -16,9 +17,10 @@ def norm_cache_key(v):
 
 
 def default_key(f, *args, **kwargs):
-    keys = [norm_cache_key(v) for v in args]
-    keys += sorted(
-        ['{}={}'.format(k, norm_cache_key(v)) for k, v in kwargs.items()])
+    args = inspect.signature(f).bind(*args, **kwargs)
+    args.apply_defaults()
+    keys = ["{}={}".format(k, norm_cache_key(v))
+            for k, v in args.arguments.items()]
     return 'default.{}.{}.{}'.format(f.__module__, f.__name__, '.'.join(keys))
 
 
