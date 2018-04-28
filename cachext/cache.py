@@ -16,8 +16,17 @@ def norm_cache_key(v):
         raise ValueError('only str, int, float, bool can be key')
 
 
+_signature_cache = {}
+
+
 def default_key(f, *args, **kwargs):
-    args = inspect.signature(f).bind(*args, **kwargs)
+    func_name = ".".join([f.__module__, f.__name__])
+    sig = _signature_cache.get(func_name)
+    if not sig:
+        sig = inspect.signature(f)
+        _signature_cache[func_name] = sig
+
+    args = sig.bind(*args, **kwargs)
     args.apply_defaults()
     keys = ["{}={}".format(k, norm_cache_key(v))
             for k, v in args.arguments.items()]
