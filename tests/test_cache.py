@@ -23,13 +23,7 @@ def test_default_key():
         cache.default_key(tmp, [], b=b'hello')
 
     key = cache.default_key(tmp, b'hello', b=True, c=None)
-    assert key == 'default.{}.{}.{}'.format(tmp.__module__, tmp.__name__, 'a=hello.b=True.c=None')
-
-    key = cache.default_key(tmp, 1)
-    assert key == cache.default_key(tmp, 1, 2)
-    assert key == cache.default_key(tmp, 1, b=2)
-    assert key == cache.default_key(tmp, a=1, b=2)
-    assert key == cache.default_key(tmp, b=2, c=None, a=1)
+    assert key == 'default.{}.{}.{}'.format(tmp.__module__, tmp.__name__, 'hello.b=True.c=None')
 
 
 def test_cache_ext(app):
