@@ -46,7 +46,7 @@ def f():
     pass
 ```
 
-**详细参数**`(func=None, ttl=None, cache_key=cachext.cache.default_key, unless=None, fallbacked=None, cache_none=False)`
+**详细参数**`(func=None, ttl=None, cache_key=cachext.cache.default_key, cache_version='v0', unless=None, fallbacked=None, cache_none=False)`
 
 #### `ttl`
 
@@ -70,6 +70,12 @@ def default_key(f, *args, **kwargs):
         ['{}={}'.format(k, norm_cache_key(v)) for k, v in kwargs.items()])
     return 'default.{}.{}.{}'.format(f.__module__, f.__name__, '.'.join(keys))
 ```
+
+#### `cache_version`
+
+`cache_version` 会与 `cache_key` 拼装在一起，更改这个参数可以使原有缓存失效。
+
+如果需要整个项目的缓存全部失效，可以通过更改 `CACHE_PREFIX` 配置的值来实现
 
 #### `unless`
 
