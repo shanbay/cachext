@@ -31,12 +31,14 @@ class cached:
     client = None
 
     def __init__(self, func=None, ttl=None, cache_key=default_key,
-                 unless=None, fallbacked=None, cache_none=False):
+                 cache_version=None, unless=None, fallbacked=None,
+                 cache_none=False):
         self.ttl = ttl
         self.cache_key = cache_key
         self.unless = unless
         self.fallbacked = fallbacked
         self.cache_none = cache_none
+        self.cache_version = cache_version
         if func is not None:
             func = self.decorator(func)
         self.func = func
@@ -71,7 +73,9 @@ class cached:
                 key = self.cache_key(f, *args, **kwargs)
             else:
                 key = self.cache_key
-            return key
+
+            return key if not self.cache_version else\
+                '{key}.{version}'.format(key=key, version=self.cache_version)
 
         wrapper.uncached = f
         wrapper.ttl = self.ttl

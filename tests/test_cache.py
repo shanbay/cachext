@@ -68,6 +68,14 @@ def test_cached(app):
         total += num
         return total
 
+    @c.cached(cache_key='testkey', cache_version='v1')
+    def empty_func():
+        pass
+
+    with mock.patch.object(c._backend, 'get', return_value=100) as mocked:
+        empty_func()
+        mocked.assert_called_once_with('testkey.v1')
+
     with mock.patch.object(c._backend, 'get', return_value=100) as mocked:
         incr2(10)
         mocked.assert_called_once_with('testkey')
