@@ -34,7 +34,7 @@ def test_redis_backend():
     assert c.set('key', 'value', ttl=1)
     assert c.exists('key')
     assert c.get('key') == 'value'
-    assert c._client.get('testapp.key') == pickle.dumps('value', pickle.HIGHEST_PROTOCOL)
+    assert c._client.get('testapp.key') == pickle.dumps('value')
     assert c.expireat('key', time.time() - 1) == 1
     assert c.expireat('nokey', time.time() - 1) == 0
     assert c.get('key') is None
