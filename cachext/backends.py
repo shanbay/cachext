@@ -89,11 +89,11 @@ class Redis(BaseBackend):
         else:
             ttl = int(ttl)
         return self._client.set(
-            key, pickle.dumps(value, pickle.HIGHEST_PROTOCOL),
+            key, pickle.dumps(value),
             ex=ttl)
 
     def set_many(self, mapping, ttl=None):
-        mapping = {self.trans_key(k): pickle.dumps(v, pickle.HIGHEST_PROTOCOL)
+        mapping = {self.trans_key(k): pickle.dumps(v)
                    for k, v in mapping.items()}
         rv = self._client.mset(mapping)
         if ttl is None:
