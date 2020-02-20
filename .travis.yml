@@ -3,6 +3,8 @@ cache: pip
 python:
 - '3.5'
 - '3.6'
+- '3.7'
+- '3.8'
 install:
 - pip install -r test-requirements.txt -U
 services:
@@ -21,6 +23,6 @@ deploy:
   user: __token__
   on:
     tags: true
-    python: '3.7'
+    python: '3.8'
   password:
     secure: zY4BAR+eL6fwDFC9hTmzFG3QeLWahWzGVw8/gwX7/lc/sorKKJXuVEPMiq8eKmLqX4GS4VYt4WNP5Qx76/XxFRG7jQEp8QCrW5AGAb41f2bSnMIPTSo0SoKQdYX444jyxa35DipkJJnhLLDjSxzuGkiWA5vk1drPtdywBoc6OFZdxHWubA6kD97E10b3kcYWD9xyBuzG9lR0cynKB9KyBAyppog8+ueAtc7rdab3U29GtH9wRH7N2UxNIYxz4F7pTHUYIsXDDXcbOQFE18Xfg0X5Dmbtf02o8IPSJ/JqZHfZ9/PwZ7poaSl4N2Y4fOMS5e2a5U2h2qBVtvg3JUUSXOXVXmhFmamZGS3L9QJrlPlpH2S5lcHB3lAF1ukqYZlphub/GvVtDWsFlAMFHqHiKO0fiaGggtbN6gpGt/kZBmKgei9X9iLtvaB+YjiZF1+YGjb7GBGK3lnWvd80Qngeur9RPdSrSEmRctN/ppCUcYAMprN1tMquC5pbmWh77HAQ4Rj2F2sIu0z609tX4kgwdS1xPHJ/S4oUXOBheIJeibEK7N8dGBpm7NaVi0n1o3gGMMwlRuhBm77uXy8MKKt0kNlGpTArU59VC5mlQids1ZxQzwPXFb0mXLQdw1G83gievA7Bns8io8juuhxYHGn7q29AWLpUauLB1aD3BZrtJSM=
