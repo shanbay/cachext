@@ -91,4 +91,4 @@ class cached:
         return wrapper
 
     def __getattr__(self, name):
-        return getattr(self.func, name)
+        return getattr(self.func, name, None)
