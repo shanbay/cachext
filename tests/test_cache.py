@@ -1,5 +1,7 @@
 import pytest
 import os.path
+import requests
+from prometheus_client import start_http_server
 from unittest import mock
 from cachext.exts import Cache
 from cachext import backends, cache
@@ -27,7 +29,6 @@ def test_default_key():
 
 
 def test_cache_ext(app):
-
     c = Cache()
     assert c._backend is None
     c.init_app(app)
@@ -35,9 +36,20 @@ def test_cache_ext(app):
 
 
 def test_cached(app):
+    from cachext.exts import new_request_counter, new_hit_counter
+
     total = 0
     fallbacked_count = 0
     c = app.extensions.cache
+    c.cached.request_counter = new_request_counter()
+    c.cached.hit_counter = new_hit_counter()
+    c.clear()
+
+    start_http_server(2112)
+    metric_url = "http://localhost:2112/metrics"
+
+    assert c.cached.request_counter is not None
+    assert c.cached.hit_counter is not None
 
     def true_if_gte_10(num):
         return num >= 10
@@ -56,8 +68,13 @@ def test_cached(app):
     rt = incr1(1)
     assert rt == 1
     assert fallbacked_count == 1
+    metric_data = requests.get(metric_url).text
+    assert 'cache_request_counter_total{func_name="incr1",prefix_name="seapp"} 1.0' in metric_data
     rt = incr1(1)
     assert rt == 1
+    metric_data = requests.get(metric_url).text
+    assert 'cache_request_counter_total{func_name="incr1",prefix_name="seapp"} 2.0' in metric_data
+    assert 'cache_hit_counter_total{func_name="incr1",prefix_name="seapp"} 1.0' in metric_data
     rt = incr1(10)
     assert rt == 11
     assert fallbacked_count == 1

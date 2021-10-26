@@ -9,3 +9,4 @@ flask
 sea
 redis
 pylibmc
+prometheus_client
