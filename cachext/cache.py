@@ -56,6 +56,10 @@ class cached:
                 return f(*args, **kwargs)
             key = wrapper.make_cache_key(*args, **kwargs)
             rv = self.client.get(key)
+            labels = (self.client.prefix, f.__name__)
+            if self.request_counter:
+                # Increment request counter.
+                self.request_counter.labels(*labels).inc()
             if rv is None:
                 rv = f(*args, **kwargs)
                 if self.cache_none and rv is None:
@@ -64,6 +68,9 @@ class cached:
                     self.client.set(key, rv, ttl=wrapper.ttl)
                 if callable(self.fallbacked):
                     self.fallbacked(wrapper, rv, *args, **kwargs)
+            elif self.hit_counter:
+                # Increment hit counter.
+                self.hit_counter.labels(*labels).inc()
             if self.cache_none and rv is CacheNone:
                 return None
             return rv
@@ -84,4 +91,4 @@ class cached:
         return wrapper
 
     def __getattr__(self, name):
-        return getattr(self.func, name)
+        return getattr(self.func, name, None)
