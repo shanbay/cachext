@@ -56,7 +56,7 @@ class cached:
                 return f(*args, **kwargs)
             key = wrapper.make_cache_key(*args, **kwargs)
             rv = self.client.get(key)
-            labels = (self.client.prefix, f.__name__)
+            labels = (self.client.prefix, f"{f.__module__}.{f.__name__}")
             if self.request_counter:
                 # Increment request counter.
                 self.request_counter.labels(*labels).inc()
