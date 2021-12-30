@@ -69,12 +69,12 @@ def test_cached(app):
     assert rt == 1
     assert fallbacked_count == 1
     metric_data = requests.get(metric_url).text
-    assert 'cache_request_counter_total{func_name="incr1",prefix_name="seapp"} 1.0' in metric_data
+    assert 'cache_request_counter_total{func_name="tests.test_cache.incr1",prefix_name="seapp"} 1.0' in metric_data
     rt = incr1(1)
     assert rt == 1
     metric_data = requests.get(metric_url).text
-    assert 'cache_request_counter_total{func_name="incr1",prefix_name="seapp"} 2.0' in metric_data
-    assert 'cache_hit_counter_total{func_name="incr1",prefix_name="seapp"} 1.0' in metric_data
+    assert 'cache_request_counter_total{func_name="tests.test_cache.incr1",prefix_name="seapp"} 2.0' in metric_data
+    assert 'cache_hit_counter_total{func_name="tests.test_cache.incr1",prefix_name="seapp"} 1.0' in metric_data
     rt = incr1(10)
     assert rt == 11
     assert fallbacked_count == 1
