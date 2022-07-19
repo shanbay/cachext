@@ -2,6 +2,12 @@
 
 ---
 
+## [Unreleased]
+
+added:
+
+- allow custom cache hit ratio label
+
 ## 1.1.2 - 2021-12-30
 
 changed:
