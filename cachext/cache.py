@@ -22,6 +22,10 @@ def default_key(f, *args, **kwargs):
     return 'default.{}.{}.{}'.format(f.__module__, f.__name__, '.'.join(keys))
 
 
+def default_monitor_label_builder(f, *args, **kwargs):
+    return f"{f.__module__}.{f.__name__}"
+
+
 class CacheNone:
     pass
 
@@ -32,7 +36,7 @@ class cached:
 
     def __init__(self, func=None, ttl=None, cache_key=default_key,
                  cache_version=None, unless=None, fallbacked=None,
-                 cache_none=False):
+                 cache_none=False, monitor_label_builder=None):
         self.ttl = ttl
         self.cache_key = cache_key
         self.unless = unless
@@ -42,6 +46,8 @@ class cached:
         if func is not None:
             func = self.decorator(func)
         self.func = func
+        self.monitor_label_builder = (
+                monitor_label_builder or default_monitor_label_builder)
 
     def __call__(self, *args, **kwargs):
         if self.func is not None:
@@ -56,7 +62,10 @@ class cached:
                 return f(*args, **kwargs)
             key = wrapper.make_cache_key(*args, **kwargs)
             rv = self.client.get(key)
-            labels = (self.client.prefix, f"{f.__module__}.{f.__name__}")
+            labels = (
+                self.client.prefix,
+                self.monitor_label_builder(f, *args, **kwargs)
+            )
             if self.request_counter:
                 # Increment request counter.
                 self.request_counter.labels(*labels).inc()

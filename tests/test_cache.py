@@ -103,3 +103,42 @@ def test_cached(app):
     with mock.patch.object(c._backend, 'set', return_value=True) as mocked:
         c.set('key', 'value')
         mocked.assert_called_once_with('key', 'value')
+
+    def monitor_label_builder(f, *args, **kwargs):
+        if args and isinstance(args[0], type):
+            return f'{f.__module__}.{args[0].__name__}.{f.__name__}'
+        return f'{f.__module__}.{f.__name__}'
+
+    class BaseCachedModel:
+
+        @classmethod
+        @c.cached(monitor_label_builder=monitor_label_builder)
+        def get_cached_obj(cls, id_):
+            return id_ + 1
+
+    class CachedModel(BaseCachedModel):
+        pass
+
+    with mock.patch.object(c._backend, 'get', return_value=100),\
+            mock.patch.object(c.cached.request_counter, 'labels') as m:
+        CachedModel.get_cached_obj(1)
+        m.assert_called_with(
+            'seapp', 'tests.test_cache.CachedModel.get_cached_obj')
+
+    @c.cached(monitor_label_builder=monitor_label_builder)
+    def func_with_label_builder(key):
+        return key
+    with mock.patch.object(c._backend, 'get', return_value=100),\
+            mock.patch.object(c.cached.request_counter, 'labels') as m:
+        func_with_label_builder(1)
+        m.assert_called_with(
+            'seapp', 'tests.test_cache.func_with_label_builder')
+
+    @c.cached()
+    def func_with_default_label_builder(key):
+        return key
+    with mock.patch.object(c._backend, 'get', return_value=100),\
+            mock.patch.object(c.cached.request_counter, 'labels') as m:
+        func_with_default_label_builder(2)
+        m.assert_called_with(
+            'seapp', 'tests.test_cache.func_with_default_label_builder')
