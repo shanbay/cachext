@@ -2,9 +2,9 @@
 
 ---
 
-## [Unreleased]
+## [1.2.0] - 2022-07-26
 
-added:
+### Added:
 
 - allow custom cache hit ratio label
 
