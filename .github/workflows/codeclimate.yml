@@ -15,10 +15,9 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Coveralls Parallel
-        uses: AndreMiras/coveralls-python-action@develop
-        with:
-          flag-name: "Coverage Test - ${{ matrix.python-version }}"
+      - name: Test with pytest
+        run: |
+          pytest tests --cov cachext
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v3.0.0
         env:
