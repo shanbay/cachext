@@ -47,6 +47,8 @@ class Redis:
 
     def init_app(self, app):
         import redis
+        from opentelemetry.instrumentation.redis import RedisInstrumentor
+        RedisInstrumentor().instrument()
         opts = app.config.get_namespace(self.ns)
         self._pool = redis.ConnectionPool(**opts)
         self._client = redis.StrictRedis(connection_pool=self._pool)
