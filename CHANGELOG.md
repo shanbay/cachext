@@ -2,6 +2,12 @@
 
 ---
 
+## [1.2.0] - 2024-04-29
+
+### Added:
+
+- Redis OpenTelemetry Instrument
+
 ## [1.2.0] - 2022-07-26
 
 ### Added:
