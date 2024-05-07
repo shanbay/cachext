@@ -2,6 +2,7 @@ import abc
 import pickle
 import time
 from threading import RLock, Lock
+from .otel import otel_instrument
 
 
 class BaseBackend(metaclass=abc.ABCMeta):
@@ -68,8 +69,7 @@ class Redis(BaseBackend):
 
     def __init__(self, prefix=None, default_ttl=600, **kwargs):
         import redis
-        from opentelemetry.instrumentation.redis import RedisInstrumentor
-        RedisInstrumentor().instrument()
+        otel_instrument()
         self._client = redis.StrictRedis(**kwargs)
         self.prefix = prefix
         self.default_ttl = default_ttl
