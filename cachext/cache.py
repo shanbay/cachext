@@ -67,8 +67,10 @@ class cached:
                 self.monitor_label_builder(f, *args, **kwargs)
             )
             if self.request_counter:
-                # Increment request counter.
-                self.request_counter.labels(*labels).inc()
+                try:
+                    self.request_counter.labels(*labels).inc()
+                except Exception as e:
+                    print("request_counter.labels(*labels).inc() error: ", e)
             if rv is None:
                 rv = f(*args, **kwargs)
                 if self.cache_none and rv is None:
@@ -78,8 +80,10 @@ class cached:
                 if callable(self.fallbacked):
                     self.fallbacked(wrapper, rv, *args, **kwargs)
             elif self.hit_counter:
-                # Increment hit counter.
-                self.hit_counter.labels(*labels).inc()
+                try:
+                    self.hit_counter.labels(*labels).inc()
+                except Exception as e:
+                    print("hit_counter.labels(*labels).inc() error: ", e)
             if self.cache_none and rv is CacheNone:
                 return None
             return rv

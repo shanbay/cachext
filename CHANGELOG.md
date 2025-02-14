@@ -2,6 +2,12 @@
 
 ---
 
+## [1.2.2] - 2025-02-14
+
+changed:
+
+- handle exceptions on prometheus operations
+
 ## [1.2.1] - 2024-04-29
 
 ### Added:
